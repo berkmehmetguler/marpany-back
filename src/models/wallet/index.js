@@ -1,53 +1,17 @@
 import mongoose from "mongoose";
 
-const walletSchema = new mongoose.Schema({
-  user_id: {
-    type: String,
-    required: true,
-  },
-  balance: {
-    type: Number,
-    required: true,
-    default: 0.00,
-  },
-  last_payment: {
-    date: {
-      type: Date,
-      required: false,
-      default: Date.now,
+const walletSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: String,
+      required: true,
     },
-    amount: {
+    balance: {
       type: Number,
-      required: false,
+      required: true,
       default: 0.0,
     },
-  },
-  last_widthdraw: {
-    date: {
-      type: Date,
-      required: false,
-      default: Date.now,
-    },
-    amount: {
-      type: Number,
-      required: false,
-      default: 0.0,
-    },
-  },
-  last_deposit: {
-    date: {
-      type: Date,
-      required: false,
-      default: Date.now,
-    },
-    amount: {
-      type: Number,
-      required: false,
-      default: 0.0,
-    },
-  },
-  payment_history: [
-    {
+    last_payment: {
       date: {
         type: Date,
         required: false,
@@ -56,31 +20,60 @@ const walletSchema = new mongoose.Schema({
       amount: {
         type: Number,
         required: false,
-        default: 0.00,
+        default: 0.0,
       },
-      service: {
-        type: String,
+    },
+    last_widthdraw: {
+      date: {
+        type: Date,
         required: false,
-        default: "Unknown",
+        default: Date.now,
+      },
+      amount: {
+        type: Number,
+        required: false,
+        default: 0.0,
       },
     },
-  ],
-  currency: {
-    type: String,
-    required: false,
-    default: "USD",
+    last_deposit: {
+      date: {
+        type: Date,
+        required: false,
+        default: Date.now,
+      },
+      amount: {
+        type: Number,
+        required: false,
+        default: 0.0,
+      },
     },
-  created_at: {
-    type: Date,
-    required: false,
-    default: Date.now,
+    payment_history: [
+      {
+        date: {
+          type: Date,
+          required: false,
+          default: Date.now,
+        },
+        amount: {
+          type: Number,
+          required: false,
+          default: 0.0,
+        },
+        service: {
+          type: String,
+          required: false,
+          default: "Unknown",
+        },
+      },
+    ],
+    currency: {
+      type: String,
+      required: false,
+      default: "USD",
+    },
   },
-  updated_at: {
-    type: Date,
-    required: false,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 const Wallet = mongoose.model("Wallet", walletSchema);
 

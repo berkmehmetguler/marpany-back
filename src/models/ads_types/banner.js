@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const popupSchema = new mongoose.Schema(
+const bannerSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -133,6 +133,6 @@ const popupSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Popup = mongoose.model("Popup", popupSchema);
+const Banner = mongoose.model("Banner", bannerSchema);
 
-export default Popup;
+export default Banner;
