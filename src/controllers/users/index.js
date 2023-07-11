@@ -84,4 +84,40 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res, next) => {
+    const { user_info } = req.body;
+  
+    try {
+      const user = await User.findOne(
+        { $or: [{ email: user_info }, { username: user_info }] },
+      );
+  
+      if (!user) {
+        return res.status(200).json({ message: "Success" });
+      }
+      const tokenIsExist = await Token.findOne({ userId: user._id, token_type: "forgetPassword" });
+      if (tokenIsExist) {
+        await Token.deleteOne({ userId: user._id });
+      }
+  
+      const token = await new Token({
+        userId: user._id,
+        token: crypto.randomBytes(32).toString("hex"),
+        token_type: "forgetPassword",
+      }).save();
+  
+      const url = `${process.env.BASE_URL}app/auth/resetPassword/rf&scr/${user._id}/token/${token.token}`;
+      const mailData = {
+        email: user.email,
+        subject: "Reset Password",
+        body: url,
+      };
+  
+      sendMailVerification(mailData);
+      res.status(200).json({ message: "Success" });
+    } catch (e) {
+      next(e);
+    }
+  };
+
 export { createUser, verifyEmail}
