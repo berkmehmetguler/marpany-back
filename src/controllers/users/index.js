@@ -1,12 +1,49 @@
 import User from "../../models/users/index.js";
 import Token from "../../models/token/token.js";
 import { userValidation } from "./validation.js";
-import { signAccessToken, signRefreshToken } from "../../middleware/jwt.js";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from "../../middleware/jwt.js";
 import { sendMailVerification } from "../../utils/mail_sender/sendEmail.js";
 import { verificationTemplate } from "../../utils/mail_sender/templates/verification/verification.js";
 import { forgotPasswordTemplate } from "../../utils/mail_sender/templates/forgot_password/forgot_password.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+
+const loginUser = async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+
+    const isExistUser = await User.findOne({ username });
+
+    if (!isExistUser) {
+      res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatched = await isExistUser.isValidPassword(password);
+
+    if (!isMatched) {
+      return res
+        .status(401)
+        .json({ error: true, message: "Invalid Credentials" });
+    }
+
+    const accessToken = await signAccessToken({
+      user_id: isExistUser._id,
+    });
+    const refreshToken = await signRefreshToken(isExistUser._id);
+
+    const userData = isExistUser.toObject();
+    delete userData.password;
+    delete userData.__v;
+    res.status(200).json({ user: userData, accessToken, refreshToken });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 const createUser = async (req, res) => {
   const { phone, email_address, username } = req.body;
 
@@ -129,12 +166,14 @@ const resetPassword = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: id });
     if (!user) {
-      return res.status(400).json({message:"user not found"});
+      return res.status(400).json({ message: "user not found" });
     }
 
     const isOldPassword = await bcrypt.compare(password, user.password);
     if (isOldPassword) {
-      return res.status(400).json({message:"new password must be different from old password"});
+      return res
+        .status(400)
+        .json({ message: "new password must be different from old password" });
     }
 
     const tokenData = await Token.findOne({
@@ -143,7 +182,7 @@ const resetPassword = async (req, res, next) => {
       token_type: "forgot_password",
     });
     if (!tokenData) {
-      return res.status(400).json({message:"invalid link"});
+      return res.status(400).json({ message: "invalid link" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -185,4 +224,30 @@ const checkToken = async (req, res, next) => {
   }
 };
 
-export { createUser, verifyEmail, forgotPassword, resetPassword, checkToken };
+const refreshToken = async (req, res, next) => {
+  const { refresh_token } = req.body;
+  console.log("refresh_token", refresh_token);
+  try {
+    if (!refresh_token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user_id = await verifyRefreshToken(refresh_token);
+    const accessToken = await signAccessToken(user_id);
+    const refreshToken = await signRefreshToken(user_id);
+
+    return res.status(200).json({ accessToken, refreshToken });
+  } catch (e) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+export {
+  createUser,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  checkToken,
+  loginUser,
+  refreshToken,
+};
