@@ -8,5 +8,10 @@ router.get("/", (req, res) => {
 );
 
 router.use("/api/auth", auth);
+router.use("/api/cookies", (req, res) => {
+    console.log("req: ", req);
+    res.cookie("name", "express").send("cookie set"); //Sets name = express
+    }
+);
 
 export default router;

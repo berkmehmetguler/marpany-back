@@ -79,7 +79,7 @@ const verifyRefreshToken = async (refresh_token) => {
         }
         const { user_id } = payload;
         const user_token = await redis.get(user_id);
- console.log('user_token',user_token);
+
         if (!user_token) {
           return reject(Boom.unauthorized());
         }

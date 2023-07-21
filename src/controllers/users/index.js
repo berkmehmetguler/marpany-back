@@ -19,15 +19,13 @@ const loginUser = async (req, res, next) => {
     const isExistUser = await User.findOne({ username });
 
     if (!isExistUser) {
-      res.status(404).json({ message: "User not found" });
+      throw new Error("Invalid username");
     }
 
     const isMatched = await isExistUser.isValidPassword(password);
 
     if (!isMatched) {
-      return res
-        .status(401)
-        .json({ error: true, message: "Invalid Credentials" });
+       throw new Error("Invalid password");
     }
 
     const accessToken = await signAccessToken({
