@@ -27,6 +27,7 @@ const signAccessToken = (data) => {
 
 const verifyAccessToken = (req, res, next) => {
   const authorizationToken = req.headers["authorization"];
+
   if (!authorizationToken) {
     next(Boom.unauthorized());
   }
@@ -60,7 +61,7 @@ const signRefreshToken = (user_id) => {
         console.log(err);
         reject(Boom.internal());
       }
-      console.log('token',token);
+      console.log("token", token);
       redis.set(user_id, token, "EX", 180 * 24 * 60 * 60);
 
       resolve(token);
@@ -85,8 +86,8 @@ const verifyRefreshToken = async (refresh_token) => {
         }
         if (refresh_token === user_token) {
           return resolve(user_id);
-        } 
-        return  reject(Boom.unauthorized());
+        }
+        return reject(Boom.unauthorized());
       }
     );
   });
